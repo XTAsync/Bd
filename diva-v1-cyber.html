@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Happy 15th Birthday Diva 💎</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Orbitron:wght@400;700;900&family=DM+Sans:wght@300;400&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+  :root {
+    --pink: #ff2d78; --neon-pink: #ff69b4; --cyan: #00f5ff;
+    --purple: #b94fff; --gold: #ffd700; --bg: #03000a;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body { background: var(--bg); font-family: 'DM Sans', sans-serif; color: #fff; overflow-x: hidden; cursor: none; }
+
+  .cursor { position: fixed; width: 20px; height: 20px; border-radius: 50%; pointer-events: none; z-index: 9999; transform: translate(-50%,-50%); background: radial-gradient(circle, rgba(255,45,120,0.8), transparent); box-shadow: 0 0 20px var(--pink), 0 0 40px var(--pink); mix-blend-mode: screen; transition: transform 0.05s; }
+  .cursor-ring { position: fixed; width: 40px; height: 40px; border-radius: 50%; border: 1px solid rgba(0,245,255,0.5); pointer-events: none; z-index: 9998; transform: translate(-50%,-50%); transition: transform 0.15s, left 0.15s, top 0.15s; }
+
+  /* THREE.js canvas */
+  #three-canvas { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+
+  .grid { position: fixed; inset: 0; pointer-events: none; z-index: 1;
+    background-image: linear-gradient(rgba(255,45,120,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,45,120,0.04) 1px, transparent 1px);
+    background-size: 50px 50px; animation: gridShift 25s linear infinite; }
+  @keyframes gridShift { 0%{background-position:0 0} 100%{background-position:50px 50px} }
+
+  .scanline { position: fixed; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--pink), var(--cyan), var(--purple), transparent);
+    animation: scan 5s linear infinite; pointer-events: none; z-index: 100; opacity: 0.5; }
+  @keyframes scan { 0%{top:0} 100%{top:100vh} }
+
+  .noise { position: fixed; inset: 0; z-index: 2; pointer-events: none; opacity: 0.03;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
+
+  /* Glitter trail canvas */
+  #glitter { position: fixed; inset: 0; z-index: 3; pointer-events: none; }
+
+  section { position: relative; z-index: 5; }
+
+  /* HERO */
+  .hero { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 60px 20px; }
+
+  .badge { font-family: 'Orbitron', sans-serif; font-size: 10px; letter-spacing: 5px; color: var(--cyan);
+    border: 1px solid rgba(0,245,255,0.3); padding: 8px 24px; border-radius: 100px; display: inline-block;
+    background: rgba(0,245,255,0.05); margin-bottom: 40px; text-transform: uppercase;
+    opacity: 0; animation: fadeUp 0.8s ease forwards 0.3s; box-shadow: 0 0 20px rgba(0,245,255,0.1); }
+
+  .gem-wrap { position: relative; margin: -20px auto 0; width: 300px; height: 300px; opacity: 0; animation: fadeIn 1.2s ease forwards 0.5s; }
+  #gem-canvas { width: 300px; height: 300px; }
+
+  .big-15 { font-family: 'Orbitron', sans-serif; font-size: clamp(100px, 22vw, 200px); font-weight: 900; line-height: 1;
+    background: linear-gradient(135deg, #ff2d78 0%, #b94fff 50%, #00f5ff 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    filter: drop-shadow(0 0 60px rgba(255,45,120,0.6));
+    opacity: 0; animation: zoomIn 1s cubic-bezier(0.175,0.885,0.32,1.275) forwards 0.8s; position: relative; z-index: 2; margin-top: -80px; }
+
+  @keyframes zoomIn { from{opacity:0;transform:scale(0.5) rotate(-10deg)} to{opacity:1;transform:scale(1) rotate(0deg)} }
+
+  .hero-subtitle { font-family: 'Playfair Display', serif; font-style: italic; font-size: clamp(22px,5vw,44px);
+    opacity: 0; animation: fadeUp 1s ease forwards 1.1s;
+    background: linear-gradient(90deg, #fff 40%, var(--neon-pink)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+
+  .diva-name { font-family: 'Orbitron', sans-serif; font-size: clamp(28px,7vw,64px); font-weight: 900; letter-spacing: 8px;
+    color: var(--gold); text-transform: uppercase; margin-top: 8px;
+    text-shadow: 0 0 30px var(--gold), 0 0 60px rgba(255,215,0,0.4);
+    opacity: 0; animation: fadeUp 1s ease forwards 1.4s; }
+
+  .divider { width: 200px; height: 1px; background: linear-gradient(90deg, transparent, var(--pink), transparent); margin: 28px auto;
+    opacity: 0; animation: fadeUp 1s ease forwards 1.6s; }
+
+  .hero-msg { font-size: 15px; line-height: 1.9; max-width: 480px; color: rgba(255,255,255,0.65);
+    opacity: 0; animation: fadeUp 1s ease forwards 1.8s; }
+
+  /* 3D CARDS SECTION */
+  .cards-section { padding: 80px 20px; max-width: 1000px; margin: 0 auto; }
+  .cards-title { font-family: 'Playfair Display', serif; font-style: italic; font-size: clamp(22px,4vw,38px); text-align: center; margin-bottom: 50px;
+    background: linear-gradient(90deg, var(--neon-pink), var(--purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+
+  .cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 24px; }
+
+  .card-3d { perspective: 1000px; }
+  .card-inner { background: rgba(255,45,120,0.06); border: 1px solid rgba(255,45,120,0.2); border-radius: 24px;
+    padding: 40px 28px; text-align: center; backdrop-filter: blur(20px);
+    transition: transform 0.1s; transform-style: preserve-3d; position: relative; overflow: hidden;
+    cursor: pointer; }
+  .card-inner::before { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(255,45,120,0.1), rgba(0,245,255,0.05), transparent); opacity: 0; transition: opacity 0.3s; border-radius: 24px; }
+  .card-inner::after { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+    background: conic-gradient(transparent 0deg, rgba(255,45,120,0.1) 60deg, transparent 120deg);
+    animation: rotateBg 4s linear infinite; opacity: 0; transition: opacity 0.3s; }
+  .card-inner:hover::before, .card-inner:hover::after { opacity: 1; }
+
+  @keyframes rotateBg { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+
+  .card-icon { font-size: 48px; margin-bottom: 20px; display: block; animation: bobble 3s ease-in-out infinite; }
+  @keyframes bobble { 0%,100%{transform:translateY(0) rotate(-5deg)} 50%{transform:translateY(-10px) rotate(5deg)} }
+  .card-icon:nth-child(1) { animation-delay: 0s; }
+
+  .card-title { font-family: 'Orbitron', sans-serif; font-size: 11px; letter-spacing: 3px; color: var(--cyan); text-transform: uppercase; margin-bottom: 12px; }
+  .card-text { font-size: 13px; color: rgba(255,255,255,0.6); line-height: 1.8; }
+
+  /* COUNTDOWN */
+  .countdown-section { padding: 80px 20px; text-align: center; }
+  .cd-title { font-family: 'Playfair Display', serif; font-style: italic; font-size: clamp(20px,4vw,36px); margin-bottom: 50px;
+    background: linear-gradient(90deg, var(--cyan), var(--purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+
+  .cd-wrap { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; }
+  .cd-box { position: relative; background: rgba(0,245,255,0.05); border: 1px solid rgba(0,245,255,0.2);
+    border-radius: 20px; padding: 30px 32px; min-width: 110px; overflow: hidden; }
+  .cd-box::before { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(0,245,255,0.1), transparent);
+    animation: pulse 2s ease-in-out infinite; }
+  @keyframes pulse { 0%,100%{opacity:0.3} 50%{opacity:1} }
+
+  .cd-num { font-family: 'Orbitron', sans-serif; font-size: 48px; font-weight: 900; color: var(--cyan);
+    display: block; text-shadow: 0 0 30px var(--cyan), 0 0 60px rgba(0,245,255,0.3); position: relative; }
+  .cd-label { font-size: 9px; letter-spacing: 3px; color: rgba(255,255,255,0.4); text-transform: uppercase; margin-top: 8px; display: block; position: relative; }
+
+  /* WISH SECTION */
+  .wish-section { padding: 80px 20px; text-align: center; }
+  .wish-box { max-width: 700px; margin: 0 auto; background: rgba(255,45,120,0.05); border: 1px solid rgba(255,45,120,0.15);
+    border-radius: 32px; padding: 60px 40px; position: relative; overflow: hidden; backdrop-filter: blur(20px); }
+  .wish-box::before { content: ''; position: absolute; top: -2px; left: -2px; right: -2px; bottom: -2px; border-radius: 34px; z-index: -1;
+    background: linear-gradient(135deg, var(--pink), var(--purple), var(--cyan), var(--pink)); background-size: 400% 400%;
+    animation: borderFlow 4s ease infinite; }
+  @keyframes borderFlow { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
+
+  .wish-text { font-family: 'Playfair Display', serif; font-style: italic; font-size: clamp(18px,3vw,28px); line-height: 1.8; color: rgba(255,255,255,0.85); }
+  .wish-sig { font-family: 'Orbitron', sans-serif; font-size: 12px; letter-spacing: 3px; color: var(--gold); margin-top: 32px; text-transform: uppercase; }
+
+  /* FOOTER */
+  footer { text-align: center; padding: 60px 20px; position: relative; z-index: 5; border-top: 1px solid rgba(255,45,120,0.1); }
+  .footer-heart { font-size: 36px; animation: heartbeat 1.4s ease-in-out infinite; display: block; margin-bottom: 16px; }
+  @keyframes heartbeat { 0%,100%{transform:scale(1)} 50%{transform:scale(1.25)} }
+  .footer-text { color: rgba(255,255,255,0.35); font-size: 12px; letter-spacing: 3px; }
+
+  /* Floaters */
+  .floaters { position: fixed; inset: 0; pointer-events: none; z-index: 4; overflow: hidden; }
+  .floater { position: absolute; bottom: -60px; animation: rise var(--dur,9s) ease-in infinite var(--del,0s); opacity: 0; font-size: var(--sz,18px); }
+  @keyframes rise { 0%{transform:translateY(0) rotate(0deg);opacity:0} 10%{opacity:1} 90%{opacity:0.5} 100%{transform:translateY(-115vh) rotate(360deg) translateX(var(--dx,40px));opacity:0} }
+
+  @keyframes fadeUp { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursor-ring"></div>
+<div class="scanline"></div>
+<div class="grid"></div>
+<div class="noise"></div>
+<canvas id="three-canvas"></canvas>
+<canvas id="glitter"></canvas>
+<div class="floaters" id="floaters"></div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="badge">🗓 March 16 · The Day She Slays</div>
+  <div class="gem-wrap"><canvas id="gem-canvas"></canvas></div>
+  <div class="big-15">15</div>
+  <h1 class="hero-subtitle">Happy Birthday,</h1>
+  <div class="diva-name">Diva ✦</div>
+  <div class="divider"></div>
+  <p class="hero-msg">You weren't just born — you were launched. Fifteen years of pure magic, and the universe is just getting started with you. 💎</p>
+</section>
+
+<!-- CARDS -->
+<section class="cards-section">
+  <h2 class="cards-title">What makes Diva extraordinary ✨</h2>
+  <div class="cards-grid">
+    <div class="card-3d"><div class="card-inner" id="c1">
+      <span class="card-icon">👑</span>
+      <div class="card-title">Queen Energy</div>
+      <p class="card-text">You walk into rooms and the energy shifts. That's not a coincidence — that's pure Diva magic.</p>
+    </div></div>
+    <div class="card-3d"><div class="card-inner" id="c2">
+      <span class="card-icon">🌙</span>
+      <div class="card-title">Moon Child</div>
+      <p class="card-text">Like the moon, you glow even in the darkest nights. Beautiful, mysterious, and always guiding the way.</p>
+    </div></div>
+    <div class="card-3d"><div class="card-inner" id="c3">
+      <span class="card-icon">💫</span>
+      <div class="card-title">Star Born</div>
+      <p class="card-text">Fifteen is when your constellation fully forms. Every wish you make tonight is already on its way.</p>
+    </div></div>
+  </div>
+</section>
+
+<!-- COUNTDOWN -->
+<section class="countdown-section">
+  <h2 class="cd-title">Counting down to your moment, Diva ⏳</h2>
+  <div class="cd-wrap">
+    <div class="cd-box"><span class="cd-num" id="days">00</span><span class="cd-label">Days</span></div>
+    <div class="cd-box"><span class="cd-num" id="hours">00</span><span class="cd-label">Hours</span></div>
+    <div class="cd-box"><span class="cd-num" id="mins">00</span><span class="cd-label">Minutes</span></div>
+    <div class="cd-box"><span class="cd-num" id="secs">00</span><span class="cd-label">Seconds</span></div>
+  </div>
+</section>
+
+<!-- WISH -->
+<section class="wish-section">
+  <div class="wish-box">
+    <p class="wish-text">"To Diva — may your 15th year be filled with moments that take your breath away, friendships that feel like home, and a love for yourself so deep that nothing can shake it. You are extraordinary, and the world knows it."</p>
+    <div class="wish-sig">— With so much love, always 💗</div>
+  </div>
+</section>
+
+<footer>
+  <span class="footer-heart">💗</span>
+  <div class="footer-text">Happy 15th Birthday Diva · March 16, 2026</div>
+</footer>
+
+<script>
+// ──────────────── CURSOR ────────────────
+const cursor = document.getElementById('cursor');
+const ring = document.getElementById('cursor-ring');
+let mx=0, my=0, rx=0, ry=0;
+document.addEventListener('mousemove', e => { mx=e.clientX; my=e.clientY; cursor.style.left=mx+'px'; cursor.style.top=my+'px'; });
+function animRing(){ rx+=(mx-rx)*0.12; ry+=(my-ry)*0.12; ring.style.left=rx+'px'; ring.style.top=ry+'px'; requestAnimationFrame(animRing); }
+animRing();
+
+// ──────────────── THREE.JS BACKGROUND ────────────────
+const bgCanvas = document.getElementById('three-canvas');
+const bgRenderer = new THREE.WebGLRenderer({ canvas: bgCanvas, alpha: true });
+bgRenderer.setSize(window.innerWidth, window.innerHeight);
+bgRenderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+const bgScene = new THREE.Scene();
+const bgCam = new THREE.PerspectiveCamera(75, innerWidth/innerHeight, 0.1, 1000);
+bgCam.position.z = 5;
+
+// Particle field
+const bgGeo = new THREE.BufferGeometry();
+const cnt = 2000;
+const pos = new Float32Array(cnt * 3);
+const clr = new Float32Array(cnt * 3);
+const colors3 = [[1,0.18,0.47],[0,0.96,1],[0.73,0.31,1],[1,0.84,0]];
+for(let i=0;i<cnt;i++){
+  pos[i*3]=(Math.random()-0.5)*30;
+  pos[i*3+1]=(Math.random()-0.5)*30;
+  pos[i*3+2]=(Math.random()-0.5)*30;
+  const c=colors3[Math.floor(Math.random()*colors3.length)];
+  clr[i*3]=c[0]; clr[i*3+1]=c[1]; clr[i*3+2]=c[2];
+}
+bgGeo.setAttribute('position', new THREE.BufferAttribute(pos,3));
+bgGeo.setAttribute('color', new THREE.BufferAttribute(clr,3));
+const bgMat = new THREE.PointsMaterial({ size:0.06, vertexColors:true, transparent:true, opacity:0.7 });
+const bgPoints = new THREE.Points(bgGeo, bgMat);
+bgScene.add(bgPoints);
+
+// Floating rings
+const ringGroup = new THREE.Group();
+bgScene.add(ringGroup);
+[2,3,4].forEach((r,i)=>{
+  const rg = new THREE.RingGeometry(r, r+0.02, 64);
+  const rm = new THREE.MeshBasicMaterial({ color:[0xff2d78,0x00f5ff,0xb94fff][i], transparent:true, opacity:0.15, side:THREE.DoubleSide });
+  const ring3 = new THREE.Mesh(rg, rm);
+  ring3.rotation.x = Math.PI/3 * (i+1);
+  ringGroup.add(ring3);
+});
+
+window.addEventListener('resize', ()=>{
+  bgRenderer.setSize(innerWidth, innerHeight);
+  bgCam.aspect = innerWidth/innerHeight;
+  bgCam.updateProjectionMatrix();
+});
+
+let t=0;
+function bgAnim(){
+  t+=0.003;
+  bgPoints.rotation.y = t*0.2;
+  bgPoints.rotation.x = t*0.05;
+  ringGroup.rotation.y = t*0.3;
+  ringGroup.rotation.z = t*0.1;
+  bgRenderer.render(bgScene, bgCam);
+  requestAnimationFrame(bgAnim);
+}
+bgAnim();
+
+// ──────────────── 3D GEM (spinning diamond) ────────────────
+const gemCanvas = document.getElementById('gem-canvas');
+const gemRenderer = new THREE.WebGLRenderer({ canvas: gemCanvas, alpha: true, antialias: true });
+gemRenderer.setSize(300, 300);
+gemRenderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+const gemScene = new THREE.Scene();
+const gemCam = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
+gemCam.position.z = 3;
+
+// Diamond shape using octahedron
+const gemGeo = new THREE.OctahedronGeometry(1, 0);
+const gemMat = new THREE.MeshPhongMaterial({
+  color: 0xff2d78, emissive: 0x330011, specular: 0xffffff,
+  shininess: 200, wireframe: false, transparent: true, opacity: 0.85, side: THREE.DoubleSide
+});
+const gem = new THREE.Mesh(gemGeo, gemMat);
+gemScene.add(gem);
+
+// Wire overlay
+const wireMat = new THREE.MeshBasicMaterial({ color: 0x00f5ff, wireframe: true, transparent: true, opacity: 0.3 });
+const gemWire = new THREE.Mesh(gemGeo, wireMat);
+gemScene.add(gemWire);
+
+// Lights
+const al = new THREE.AmbientLight(0xff69b4, 0.5); gemScene.add(al);
+const pl1 = new THREE.PointLight(0xff2d78, 2, 10); pl1.position.set(2,2,2); gemScene.add(pl1);
+const pl2 = new THREE.PointLight(0x00f5ff, 2, 10); pl2.position.set(-2,-2,2); gemScene.add(pl2);
+const pl3 = new THREE.PointLight(0xb94fff, 1, 10); pl3.position.set(0,3,0); gemScene.add(pl3);
+
+let gt=0;
+function gemAnim(){
+  gt+=0.02;
+  gem.rotation.y = gt; gem.rotation.x = Math.sin(gt*0.5)*0.3;
+  gemWire.rotation.y = -gt*0.7; gemWire.rotation.x = Math.cos(gt*0.5)*0.3;
+  pl1.position.x = Math.sin(gt)*3; pl1.position.z = Math.cos(gt)*3;
+  pl2.position.x = Math.cos(gt)*3; pl2.position.z = Math.sin(gt)*3;
+  gemRenderer.render(gemScene, gemCam);
+  requestAnimationFrame(gemAnim);
+}
+gemAnim();
+
+// ──────────────── GLITTER TRAIL ────────────────
+const gc = document.getElementById('glitter');
+const gctx = gc.getContext('2d');
+gc.width = innerWidth; gc.height = innerHeight;
+window.addEventListener('resize', ()=>{ gc.width=innerWidth; gc.height=innerHeight; });
+const gp = [];
+document.addEventListener('mousemove', e=>{
+  for(let i=0;i<5;i++) gp.push({
+    x: e.clientX+(Math.random()-.5)*20, y: e.clientY+(Math.random()-.5)*20,
+    size: Math.random()*5+1, vx:(Math.random()-.5)*3, vy:(Math.random()-.5)*3-1.5,
+    life:1, color:['#ff2d78','#00f5ff','#b94fff','#ffd700','#ff69b4'][Math.floor(Math.random()*5)]
+  });
+});
+function glitterAnim(){
+  gctx.clearRect(0,0,gc.width,gc.height);
+  for(let i=gp.length-1;i>=0;i--){
+    const p=gp[i]; p.x+=p.vx; p.y+=p.vy; p.vy+=0.08; p.life-=0.018;
+    if(p.life<=0){gp.splice(i,1);continue;}
+    gctx.save(); gctx.globalAlpha=p.life; gctx.fillStyle=p.color;
+    gctx.shadowBlur=15; gctx.shadowColor=p.color;
+    gctx.beginPath(); gctx.arc(p.x,p.y,p.size,0,Math.PI*2); gctx.fill(); gctx.restore();
+  }
+  requestAnimationFrame(glitterAnim);
+}
+glitterAnim();
+
+// ──────────────── 3D CARD TILT ────────────────
+['c1','c2','c3'].forEach(id=>{
+  const el = document.getElementById(id);
+  el.addEventListener('mousemove', e=>{
+    const r = el.getBoundingClientRect();
+    const x = (e.clientX - r.left) / r.width - 0.5;
+    const y = (e.clientY - r.top) / r.height - 0.5;
+    el.style.transform = `rotateY(${x*20}deg) rotateX(${-y*20}deg) scale(1.05)`;
+  });
+  el.addEventListener('mouseleave', ()=>{ el.style.transform=''; });
+});
+
+// ──────────────── FLOATERS ────────────────
+const floatersEl = document.getElementById('floaters');
+const emojis = ['💎','✨','🎀','👑','💖','🌸','🦋','💫','🎊','⭐','🌙','💗'];
+for(let i=0;i<30;i++){
+  const f = document.createElement('div');
+  f.className='floater';
+  f.textContent=emojis[Math.floor(Math.random()*emojis.length)];
+  f.style.cssText=`left:${Math.random()*100}%;--sz:${12+Math.random()*16}px;--dur:${7+Math.random()*9}s;--del:${Math.random()*12}s;--dx:${(Math.random()-.5)*100}px;`;
+  floatersEl.appendChild(f);
+}
+
+// ──────────────── COUNTDOWN ────────────────
+function tick(){
+  const t=new Date('2026-03-16T00:00:00')-new Date();
+  if(t<=0){['days','hours','mins','secs'].forEach((id,i)=>document.getElementById(id).textContent=['🎉','🎂','✨','🎀'][i]);return;}
+  document.getElementById('days').textContent=String(Math.floor(t/86400000)).padStart(2,'0');
+  document.getElementById('hours').textContent=String(Math.floor(t%86400000/3600000)).padStart(2,'0');
+  document.getElementById('mins').textContent=String(Math.floor(t%3600000/60000)).padStart(2,'0');
+  document.getElementById('secs').textContent=String(Math.floor(t%60000/1000)).padStart(2,'0');
+}
+tick(); setInterval(tick,1000);
+</script>
+</body>
+</html>

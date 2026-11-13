@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/logo.svg" alt="Bd logo" width="180" />
+</p>
+
 # Interactive Birthday Experience
 
 A standalone, space-themed birthday microsite built as a personalised digital celebration.
